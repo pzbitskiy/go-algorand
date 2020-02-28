@@ -27,6 +27,10 @@ import (
 	"github.com/algorand/go-algorand/crypto"
 )
 
+func sortitionBinCdfWalkWrapper(n, p, ratio float64, money uint64) uint64 {
+	return uint64(C.sortition_binomial_cdf_walk(C.double(n), C.double(p), C.double(ratio), C.uint64_t(money)))
+}
+
 // Select runs the sortition function and returns the number of time the key was selected
 func Select(money uint64, totalMoney uint64, expectedSize float64, vrfOutput crypto.Digest) uint64 {
 	binomialN := float64(money)

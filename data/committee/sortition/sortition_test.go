@@ -17,7 +17,10 @@
 package sortition
 
 import (
+	"fmt"
+	"math"
 	"math/rand"
+	"sync"
 	"testing"
 
 	"github.com/algorand/go-algorand/crypto"
@@ -59,4 +62,35 @@ func TestSortitionBasic(t *testing.T) {
 	if d > maxd {
 		t.Errorf("wanted %d selections but got %d, d=%d, maxd=%d", expected, hitcount, d, maxd)
 	}
+}
+
+func TestSortitionCrash(t *testing.T) {
+	// from dump
+	rawN := uint64(0x42c57094213d8700)
+	rawP := uint64(0x3d7c7a8d7defba71)
+	rawRatio := uint64(0x3fe921898c8ff7a1)
+	money := uint64(0x2ae128427b0e)
+
+	n := math.Float64frombits(rawN)
+	p := math.Float64frombits(rawP)
+	ratio := math.Float64frombits(rawRatio)
+
+	var wg sync.WaitGroup
+	wg.Add(50)
+	var res uint64
+	for g := 0; g < 50; g++ {
+		go func() {
+			for i := 0; i < 100000; i++ {
+				res = sortitionBinCdfWalkWrapper(n, p, ratio, money)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	fmt.Printf("res = %d\n", res)
+	// var vrfOutput crypto.Digest
+	// rand.Read(vrfOutput[:])
+	// rawExp := uint64(0x40a75c0000000000)
+	// exp := math.Float64frombits(rawExp)
+	// Select(0x2ae128427b0e, 0x68fd9c6ec82d7, exp, vrfOutput)
 }
